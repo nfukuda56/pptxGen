@@ -10,7 +10,13 @@ export class PptxBuilder {
     constructor(config = {}) {
         this.config = { ...DEFAULT_CONFIG, ...config };
         this.pptx = new PptxGenJS();
-        this.pptx.layout = 'LAYOUT_16x9';
+        // カスタムスライドサイズ（25.4cm × 14.288cm）
+        this.pptx.defineLayout({
+            name: 'CUSTOM',
+            width: this.config.slideWidth,
+            height: this.config.slideHeight
+        });
+        this.pptx.layout = 'CUSTOM';
     }
 
     /**

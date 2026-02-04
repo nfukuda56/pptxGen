@@ -1,8 +1,8 @@
 // デフォルト設定値
 export const DEFAULT_CONFIG = {
-    // スライドサイズ（インチ）- 16:9標準
-    slideWidth: 13.333,
-    slideHeight: 7.5,
+    // スライドサイズ（インチ）- 25.4cm × 14.288cm（画面に合わせる）
+    slideWidth: 10,      // 25.4cm = 10インチ
+    slideHeight: 5.625,  // 14.288cm ≈ 5.625インチ
 
     // フォント設定
     fontFace: 'BIZ UDGothic',

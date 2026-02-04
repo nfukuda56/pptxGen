@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>テキスト → PPTX 生成</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=BIZ+UDGothic&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1>テキスト → PowerPoint 変換</h1>
+
+        <section class="input-section">
+            <h2>入力</h2>
+            <div class="file-upload">
+                <label for="fileInput">テキストファイルをアップロード:</label>
+                <input type="file" id="fileInput" accept=".txt">
+            </div>
+            <textarea id="inputText" placeholder="#見出し
+--
+本文テキスト
+--[項目1,項目2,項目3]
+---
+#次のスライド"></textarea>
+        </section>
+
+        <section class="settings-section">
+            <h2>設定</h2>
+            <div class="settings-grid">
+                <div class="setting-group">
+                    <label for="fontSelect">フォント:</label>
+                    <select id="fontSelect">
+                        <option value="BIZ UDGothic">BIZ UDゴシック</option>
+                        <option value="Meiryo">メイリオ</option>
+                        <option value="Yu Gothic">游ゴシック</option>
+                        <option value="MS Gothic">MS ゴシック</option>
+                    </select>
+                </div>
+
+                <div class="setting-group">
+                    <label for="headingSize">見出しサイズ:</label>
+                    <input type="number" id="headingSize" value="60" min="10" max="200">
+                    <span class="unit">pt</span>
+                </div>
+
+                <div class="setting-group">
+                    <label for="bodySize">本文サイズ:</label>
+                    <input type="number" id="bodySize" value="40" min="10" max="200">
+                    <span class="unit">pt</span>
+                </div>
+
+                <div class="setting-group">
+                    <label for="headingMargin">見出し下マージン:</label>
+                    <input type="number" id="headingMargin" value="30" min="0" max="200">
+                    <span class="unit">pt</span>
+                </div>
+
+                <div class="setting-group">
+                    <label for="verticalMargin">縦方向マージン:</label>
+                    <input type="number" id="verticalMargin" value="10" min="0" max="200">
+                    <span class="unit">pt</span>
+                </div>
+
+                <div class="setting-group">
+                    <label for="horizontalMargin">横方向マージン:</label>
+                    <input type="number" id="horizontalMargin" value="20" min="0" max="200">
+                    <span class="unit">pt</span>
+                </div>
+            </div>
+        </section>
+
+        <div class="action-section">
+            <button id="generateBtn">PPTXを生成</button>
+        </div>
+
+        <section class="help-section">
+            <h2>記法ガイド</h2>
+            <table class="syntax-table">
+                <thead>
+                    <tr>
+                        <th>記法</th>
+                        <th>意味</th>
+                        <th>配置</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>#テキスト</code></td>
+                        <td>見出し</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td><code>--</code></td>
+                        <td>本文テキストボックス開始</td>
+                        <td>縦方向</td>
+                    </tr>
+                    <tr>
+                        <td><code>--[A,B,C]</code></td>
+                        <td>複数テキストボックス</td>
+                        <td>横方向</td>
+                    </tr>
+                    <tr>
+                        <td><code>---</code></td>
+                        <td>改ページ（新スライド）</td>
+                        <td>-</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>

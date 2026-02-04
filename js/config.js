@@ -6,20 +6,20 @@ export const DEFAULT_CONFIG = {
 
     // フォント設定
     fontFace: 'BIZ UDGothic',
-    headingFontSize: 60,  // pt
-    bodyFontSize: 40,     // pt
+    headingFontSize: 36,  // pt
+    bodyFontSize: 24,     // pt
 
     // マージン設定（pt）
-    headingMarginBottom: 30,
+    headingMarginBottom: 20,
     bodyBoxMarginVertical: 10,    // 縦配置間
-    bodyBoxMarginHorizontal: 20,  // 横配置間
+    bodyBoxMarginHorizontal: 10,  // 横配置間
 
     // 開始位置（pt）
-    contentPaddingLeft: 36,   // 左マージン（0.5インチ相当）
-    contentPaddingTop: 36,    // 上マージン（0.5インチ相当）
+    contentPaddingLeft: 12,   // 左マージン（0.5インチ相当）
+    contentPaddingTop: 12,    // 上マージン（0.5インチ相当）
 
     // 横配置設定
-    horizontalBoxesPerRow: 3, // 1行あたりの横配置個数
+    horizontalBoxesPerRow: 5, // 1行あたりの横配置個数
 };
 
 // 記法パターン（正規表現）

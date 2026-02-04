@@ -53,19 +53,22 @@ export class PptxBuilder {
      */
     addHeading(slide, text, y) {
         const width = this.config.slideWidth - (this.config.contentPadding * 2);
+        const height = this.estimateTextHeight(text, this.config.headingFontSize, width);
 
         slide.addText(text, {
             x: this.config.contentPadding,
             y: y,
             w: width,
+            h: height,
             fontSize: this.config.headingFontSize,
             fontFace: this.config.fontFace,
             bold: true,
             color: '333333',
+            valign: 'top',
         });
 
         // 見出しの高さ + 見出し下マージン
-        return y + ptToInch(this.config.headingFontSize) + ptToInch(this.config.headingMarginBottom);
+        return y + height + ptToInch(this.config.headingMarginBottom);
     }
 
     /**
@@ -80,17 +83,21 @@ export class PptxBuilder {
         const width = this.config.slideWidth - (this.config.contentPadding * 2);
 
         texts.forEach(text => {
+            const height = this.estimateTextHeight(text, this.config.bodyFontSize, width);
+
             slide.addText(text, {
                 x: this.config.contentPadding,
                 y: y,
                 w: width,
+                h: height,
                 fontSize: this.config.bodyFontSize,
                 fontFace: this.config.fontFace,
                 color: '333333',
+                valign: 'top',
             });
 
             // 本文の高さ + 縦方向マージン
-            y += ptToInch(this.config.bodyFontSize) + ptToInch(this.config.bodyBoxMarginVertical);
+            y += height + ptToInch(this.config.bodyBoxMarginVertical);
         });
 
         return y;
@@ -115,6 +122,13 @@ export class PptxBuilder {
         const availableWidth = this.config.slideWidth - (this.config.contentPadding * 2) - totalMargin;
         const boxWidth = availableWidth / count;
 
+        // 全テキストボックスの最大高さを計算
+        let maxHeight = 0;
+        texts.forEach(text => {
+            const height = this.estimateTextHeight(text, this.config.bodyFontSize, boxWidth);
+            if (height > maxHeight) maxHeight = height;
+        });
+
         let x = this.config.contentPadding;
 
         texts.forEach(text => {
@@ -122,6 +136,7 @@ export class PptxBuilder {
                 x: x,
                 y: startY,
                 w: boxWidth,
+                h: maxHeight,
                 fontSize: this.config.bodyFontSize,
                 fontFace: this.config.fontFace,
                 color: '333333',
@@ -133,7 +148,31 @@ export class PptxBuilder {
         });
 
         // 本文の高さ + 縦方向マージン（次の要素との間隔）
-        return startY + ptToInch(this.config.bodyFontSize) + ptToInch(this.config.bodyBoxMarginVertical);
+        return startY + maxHeight + ptToInch(this.config.bodyBoxMarginVertical);
+    }
+
+    /**
+     * テキストの高さを推定
+     * @param {string} text - テキスト
+     * @param {number} fontSize - フォントサイズ（pt）
+     * @param {number} width - テキストボックスの幅（インチ）
+     * @returns {number} - 推定高さ（インチ）
+     */
+    estimateTextHeight(text, fontSize, width) {
+        // 1文字あたりの幅を概算（日本語は全角、英数字は半角として）
+        const avgCharWidthInch = ptToInch(fontSize) * 0.9;
+
+        // テキストボックスの幅に収まる文字数
+        const charsPerLine = Math.floor(width / avgCharWidthInch);
+
+        // 必要な行数を計算
+        const lines = Math.ceil(text.length / Math.max(charsPerLine, 1));
+
+        // 行の高さ（フォントサイズ + 行間）
+        const lineHeight = ptToInch(fontSize) * 1.4;
+
+        // 最低1行分の高さを確保
+        return Math.max(lines * lineHeight, lineHeight);
     }
 
     /**

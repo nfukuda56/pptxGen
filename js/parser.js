@@ -96,8 +96,12 @@ export function parseText(inputText) {
 
         // 通常のテキスト行
         if (currentVerticalBlock) {
-            // 縦配置ブロック内のテキストとして追加
-            currentVerticalBlock.texts.push(line);
+            // 縦配置ブロック内のテキストとして追加（改行は空白で連結）
+            if (currentVerticalBlock.currentText === undefined) {
+                currentVerticalBlock.currentText = line;
+            } else {
+                currentVerticalBlock.currentText += ' ' + line;
+            }
         }
         // 縦配置ブロック外のテキストは無視（仕様に従う）
     }
@@ -130,8 +134,11 @@ function createEmptySlide() {
  * @param {ContentBlock|null} block
  */
 function finalizeVerticalBlock(slide, block) {
-    if (block && block.texts.length > 0) {
-        slide.blocks.push(block);
+    if (block && block.currentText) {
+        slide.blocks.push({
+            type: 'vertical',
+            texts: [block.currentText]
+        });
     }
 }
 

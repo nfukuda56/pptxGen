@@ -138,11 +138,13 @@ export class PptxBuilder {
         const boxesPerRow = this.config.horizontalBoxesPerRow || 3;
         const horizontalMarginInch = ptToInch(this.config.bodyBoxMarginHorizontal);
         const verticalMarginInch = ptToInch(this.config.bodyBoxMarginVertical);
+        const leftPadding = this.getLeftPadding();
+        const contentWidth = this.getContentWidth();
 
         // 1行あたりのボックス数に基づいて幅を計算
         const totalHMargin = horizontalMarginInch * (boxesPerRow - 1);
-        const availableWidth = this.getContentWidth() - totalHMargin;
-        const boxWidth = availableWidth / boxesPerRow;
+        const availableWidth = contentWidth - totalHMargin;
+        const boxWidth = Math.max(availableWidth / boxesPerRow, 0.5); // 最小幅0.5インチ
 
         let currentY = startY;
         let rowIndex = 0;
@@ -161,17 +163,21 @@ export class PptxBuilder {
             });
 
             // この行のテキストボックスを配置
-            let x = this.getLeftPadding();
+            let x = leftPadding;
             rowTexts.forEach(text => {
+                // スライド右端をはみ出さないよう幅を調整
+                const maxAllowedWidth = this.config.slideWidth - x - leftPadding;
+                const actualWidth = Math.min(boxWidth, maxAllowedWidth);
+
                 slide.addText(text, {
                     x: x,
                     y: currentY,
-                    w: boxWidth,
+                    w: actualWidth,
                     h: maxHeight,
                     fontSize: this.config.bodyFontSize,
                     fontFace: this.config.fontFace,
                     color: '333333',
-                    align: 'center',
+                    align: 'left',
                     valign: 'top',
                 });
 

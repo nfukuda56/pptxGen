@@ -14,9 +14,12 @@ export const DEFAULT_CONFIG = {
     bodyBoxMarginVertical: 10,    // 縦配置間
     bodyBoxMarginHorizontal: 20,  // 横配置間
 
-    // レイアウト領域（インチ）
-    contentPadding: 0.5,
-    headingY: 0.5,
+    // 開始位置（pt）
+    contentPaddingLeft: 36,   // 左マージン（0.5インチ相当）
+    contentPaddingTop: 36,    // 上マージン（0.5インチ相当）
+
+    // 横配置設定
+    horizontalBoxesPerRow: 3, // 1行あたりの横配置個数
 };
 
 // 記法パターン（正規表現）

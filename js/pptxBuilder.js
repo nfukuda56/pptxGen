@@ -14,6 +14,27 @@ export class PptxBuilder {
     }
 
     /**
+     * 左マージンをインチで取得
+     */
+    getLeftPadding() {
+        return ptToInch(this.config.contentPaddingLeft);
+    }
+
+    /**
+     * 上マージンをインチで取得
+     */
+    getTopPadding() {
+        return ptToInch(this.config.contentPaddingTop);
+    }
+
+    /**
+     * コンテンツ領域の幅をインチで取得
+     */
+    getContentWidth() {
+        return this.config.slideWidth - (this.getLeftPadding() * 2);
+    }
+
+    /**
      * スライドデータからPPTXを構築
      * @param {Array} slides - パース済みスライドデータ
      */
@@ -27,7 +48,7 @@ export class PptxBuilder {
      */
     addSlide(slideData) {
         const slide = this.pptx.addSlide();
-        let currentY = this.config.headingY;
+        let currentY = this.getTopPadding();
 
         // 見出し追加
         if (slideData.heading) {
@@ -52,11 +73,11 @@ export class PptxBuilder {
      * @returns {number} - 次のY座標
      */
     addHeading(slide, text, y) {
-        const width = this.config.slideWidth - (this.config.contentPadding * 2);
+        const width = this.getContentWidth();
         const height = this.estimateTextHeight(text, this.config.headingFontSize, width);
 
         slide.addText(text, {
-            x: this.config.contentPadding,
+            x: this.getLeftPadding(),
             y: y,
             w: width,
             h: height,
@@ -80,13 +101,13 @@ export class PptxBuilder {
      */
     addVerticalBoxes(slide, texts, startY) {
         let y = startY;
-        const width = this.config.slideWidth - (this.config.contentPadding * 2);
+        const width = this.getContentWidth();
 
         texts.forEach(text => {
             const height = this.estimateTextHeight(text, this.config.bodyFontSize, width);
 
             slide.addText(text, {
-                x: this.config.contentPadding,
+                x: this.getLeftPadding(),
                 y: y,
                 w: width,
                 h: height,
@@ -104,7 +125,7 @@ export class PptxBuilder {
     }
 
     /**
-     * 横配置テキストボックス群を追加
+     * 横配置テキストボックス群を追加（折り返し対応）
      * @param {Object} slide - PptxGenJSスライドオブジェクト
      * @param {string[]} texts - テキスト配列
      * @param {number} startY - 開始Y座標（インチ）
@@ -114,41 +135,55 @@ export class PptxBuilder {
         const count = texts.length;
         if (count === 0) return startY;
 
-        // 横方向マージンをインチに変換
+        const boxesPerRow = this.config.horizontalBoxesPerRow || 3;
         const horizontalMarginInch = ptToInch(this.config.bodyBoxMarginHorizontal);
+        const verticalMarginInch = ptToInch(this.config.bodyBoxMarginVertical);
 
-        // 利用可能な幅を計算
-        const totalMargin = horizontalMarginInch * (count - 1);
-        const availableWidth = this.config.slideWidth - (this.config.contentPadding * 2) - totalMargin;
-        const boxWidth = availableWidth / count;
+        // 1行あたりのボックス数に基づいて幅を計算
+        const totalHMargin = horizontalMarginInch * (boxesPerRow - 1);
+        const availableWidth = this.getContentWidth() - totalHMargin;
+        const boxWidth = availableWidth / boxesPerRow;
 
-        // 全テキストボックスの最大高さを計算
-        let maxHeight = 0;
-        texts.forEach(text => {
-            const height = this.estimateTextHeight(text, this.config.bodyFontSize, boxWidth);
-            if (height > maxHeight) maxHeight = height;
-        });
+        let currentY = startY;
+        let rowIndex = 0;
 
-        let x = this.config.contentPadding;
+        // テキストを行ごとに分割して処理
+        while (rowIndex * boxesPerRow < count) {
+            const rowStart = rowIndex * boxesPerRow;
+            const rowEnd = Math.min(rowStart + boxesPerRow, count);
+            const rowTexts = texts.slice(rowStart, rowEnd);
 
-        texts.forEach(text => {
-            slide.addText(text, {
-                x: x,
-                y: startY,
-                w: boxWidth,
-                h: maxHeight,
-                fontSize: this.config.bodyFontSize,
-                fontFace: this.config.fontFace,
-                color: '333333',
-                align: 'center',
-                valign: 'top',
+            // この行の最大高さを計算
+            let maxHeight = 0;
+            rowTexts.forEach(text => {
+                const height = this.estimateTextHeight(text, this.config.bodyFontSize, boxWidth);
+                if (height > maxHeight) maxHeight = height;
             });
 
-            x += boxWidth + horizontalMarginInch;
-        });
+            // この行のテキストボックスを配置
+            let x = this.getLeftPadding();
+            rowTexts.forEach(text => {
+                slide.addText(text, {
+                    x: x,
+                    y: currentY,
+                    w: boxWidth,
+                    h: maxHeight,
+                    fontSize: this.config.bodyFontSize,
+                    fontFace: this.config.fontFace,
+                    color: '333333',
+                    align: 'center',
+                    valign: 'top',
+                });
 
-        // 本文の高さ + 縦方向マージン（次の要素との間隔）
-        return startY + maxHeight + ptToInch(this.config.bodyBoxMarginVertical);
+                x += boxWidth + horizontalMarginInch;
+            });
+
+            // 次の行へ
+            currentY += maxHeight + verticalMarginInch;
+            rowIndex++;
+        }
+
+        return currentY;
     }
 
     /**

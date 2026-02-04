@@ -26,6 +26,9 @@ export class UIController {
         this.headingMarginInput = document.getElementById('headingMargin');
         this.verticalMarginInput = document.getElementById('verticalMargin');
         this.horizontalMarginInput = document.getElementById('horizontalMargin');
+        this.paddingLeftInput = document.getElementById('paddingLeft');
+        this.paddingTopInput = document.getElementById('paddingTop');
+        this.boxesPerRowInput = document.getElementById('boxesPerRow');
     }
 
     /**
@@ -69,6 +72,9 @@ export class UIController {
             headingMarginBottom: this.parseNumber(this.headingMarginInput.value, DEFAULT_CONFIG.headingMarginBottom),
             bodyBoxMarginVertical: this.parseNumber(this.verticalMarginInput.value, DEFAULT_CONFIG.bodyBoxMarginVertical),
             bodyBoxMarginHorizontal: this.parseNumber(this.horizontalMarginInput.value, DEFAULT_CONFIG.bodyBoxMarginHorizontal),
+            contentPaddingLeft: this.parseNumber(this.paddingLeftInput.value, DEFAULT_CONFIG.contentPaddingLeft),
+            contentPaddingTop: this.parseNumber(this.paddingTopInput.value, DEFAULT_CONFIG.contentPaddingTop),
+            horizontalBoxesPerRow: this.parseNumber(this.boxesPerRowInput.value, DEFAULT_CONFIG.horizontalBoxesPerRow),
         };
     }
 

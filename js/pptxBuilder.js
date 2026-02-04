@@ -34,10 +34,19 @@ export class PptxBuilder {
     }
 
     /**
+     * 右マージンをインチで取得（左マージンと同じ値を使用）
+     */
+    getRightPadding() {
+        return ptToInch(this.config.contentPaddingLeft);
+    }
+
+    /**
      * コンテンツ領域の幅をインチで取得
      */
     getContentWidth() {
-        return this.config.slideWidth - (this.getLeftPadding() * 2);
+        const width = this.config.slideWidth - this.getLeftPadding() - this.getRightPadding();
+        // 負の値にならないよう保護
+        return Math.max(width, 1);
     }
 
     /**
@@ -79,11 +88,14 @@ export class PptxBuilder {
      * @returns {number} - 次のY座標
      */
     addHeading(slide, text, y) {
-        const width = this.getContentWidth();
+        const leftPadding = this.getLeftPadding();
+        const rightPadding = this.getRightPadding();
+        // スライド幅から左右パディングを引いた幅
+        const width = Math.min(this.getContentWidth(), this.config.slideWidth - leftPadding - rightPadding);
         const height = this.estimateTextHeight(text, this.config.headingFontSize, width);
 
         slide.addText(text, {
-            x: this.getLeftPadding(),
+            x: leftPadding,
             y: y,
             w: width,
             h: height,
@@ -107,13 +119,16 @@ export class PptxBuilder {
      */
     addVerticalBoxes(slide, texts, startY) {
         let y = startY;
-        const width = this.getContentWidth();
+        const leftPadding = this.getLeftPadding();
+        const rightPadding = this.getRightPadding();
+        // スライド幅から左右パディングを引いた幅
+        const width = Math.min(this.getContentWidth(), this.config.slideWidth - leftPadding - rightPadding);
 
         texts.forEach(text => {
             const height = this.estimateTextHeight(text, this.config.bodyFontSize, width);
 
             slide.addText(text, {
-                x: this.getLeftPadding(),
+                x: leftPadding,
                 y: y,
                 w: width,
                 h: height,
@@ -145,12 +160,15 @@ export class PptxBuilder {
         const horizontalMarginInch = ptToInch(this.config.bodyBoxMarginHorizontal);
         const verticalMarginInch = ptToInch(this.config.bodyBoxMarginVertical);
         const leftPadding = this.getLeftPadding();
-        const contentWidth = this.getContentWidth();
+        const rightPadding = this.getRightPadding();
+
+        // スライドの有効幅（左右パディングを除く）
+        const contentWidth = this.config.slideWidth - leftPadding - rightPadding;
 
         // 1行あたりのボックス数に基づいて幅を計算
         const totalHMargin = horizontalMarginInch * (boxesPerRow - 1);
-        const availableWidth = contentWidth - totalHMargin;
-        const boxWidth = Math.max(availableWidth / boxesPerRow, 0.5); // 最小幅0.5インチ
+        const availableWidth = Math.max(contentWidth - totalHMargin, boxesPerRow); // 最低限の幅を確保
+        const boxWidth = availableWidth / boxesPerRow;
 
         let currentY = startY;
         let rowIndex = 0;
@@ -170,15 +188,15 @@ export class PptxBuilder {
 
             // この行のテキストボックスを配置
             let x = leftPadding;
-            rowTexts.forEach(text => {
-                // スライド右端をはみ出さないよう幅を調整
-                const maxAllowedWidth = this.config.slideWidth - x - leftPadding;
-                const actualWidth = Math.min(boxWidth, maxAllowedWidth);
+            rowTexts.forEach((text) => {
+                // 各ボックスの幅を計算（最後のボックスは残りの幅を使う）
+                const remainingWidth = this.config.slideWidth - x - rightPadding;
+                const actualWidth = Math.min(boxWidth, remainingWidth);
 
                 slide.addText(text, {
                     x: x,
                     y: currentY,
-                    w: actualWidth,
+                    w: Math.max(actualWidth, 0.5), // 最小幅0.5インチ
                     h: maxHeight,
                     fontSize: this.config.bodyFontSize,
                     fontFace: this.config.fontFace,

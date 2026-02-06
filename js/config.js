@@ -6,11 +6,11 @@ export const DEFAULT_CONFIG = {
 
     // フォント設定
     fontFace: 'BIZ UDGothic',
-    headingFontSize: 36,  // pt
-    bodyFontSize: 24,     // pt
+    headingFontSize: 60,  // pt
+    bodyFontSize: 40,     // pt
 
     // マージン設定（pt）
-    headingMarginBottom: 20,
+    headingMarginBottom: 30,
     bodyBoxMarginVertical: 10,    // 縦配置間
     bodyBoxMarginHorizontal: 10,  // 横配置間
 
@@ -22,12 +22,12 @@ export const DEFAULT_CONFIG = {
     horizontalBoxesPerRow: 5, // 1行あたりの横配置個数
 };
 
-// 記法パターン（正規表現）
+// 記法パターン（正規表現）- 先頭3文字で判別
 export const SYNTAX = {
-    HEADING: /^#(.+)$/,              // #テキスト
-    PAGE_BREAK: /^---$/,             // ---
-    HORIZONTAL_BOXES: /^--\[(.+)\]$/,// --[aaa,bbb,ccc]
-    VERTICAL_BOX: /^--$/,            // --
+    PAGE_BREAK: /^---$/,              // ---
+    HEADING: /^--#\s*(.*)$/,          // --# テキスト
+    VERTICAL_BOX: /^--\/\s*(.*)$/,    // --/ テキスト
+    HORIZONTAL_BOXES: /^--\[(.+)\]$/, // --[aaa,bbb,ccc]
 };
 
 // フォント選択肢

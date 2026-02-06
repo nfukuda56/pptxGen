@@ -14,6 +14,7 @@ import { SYNTAX } from './config.js';
 
 /**
  * 入力テキストをスライドデータにパース
+ * 先頭3文字で行の種類を判別し、構文記号以外の行は直前の要素に空白で連結する
  * @param {string} inputText - 入力テキスト
  * @returns {Slide[]} - スライド配列
  */
@@ -25,7 +26,9 @@ export function parseText(inputText) {
     const lines = inputText.split('\n');
     const slides = [];
     let currentSlide = createEmptySlide();
-    let currentVerticalBlock = null;
+    // 直前の要素を追跡（継続行の連結先）
+    // { type: 'heading'|'vertical', text: string }
+    let currentElement = null;
 
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i].trim();
@@ -37,11 +40,9 @@ export function parseText(inputText) {
 
         // 改ページ（新スライド）: ---
         if (SYNTAX.PAGE_BREAK.test(line)) {
-            // 現在の縦配置ブロックを確定
-            finalizeVerticalBlock(currentSlide, currentVerticalBlock);
-            currentVerticalBlock = null;
+            finalizeElement(currentSlide, currentElement);
+            currentElement = null;
 
-            // 現在のスライドを保存し、新しいスライドを開始
             if (hasContent(currentSlide)) {
                 slides.push(currentSlide);
             }
@@ -49,23 +50,19 @@ export function parseText(inputText) {
             continue;
         }
 
-        // 見出し: #テキスト
+        // 見出し: --# テキスト
         const headingMatch = line.match(SYNTAX.HEADING);
         if (headingMatch) {
-            // 現在の縦配置ブロックを確定
-            finalizeVerticalBlock(currentSlide, currentVerticalBlock);
-            currentVerticalBlock = null;
-
-            currentSlide.heading = headingMatch[1].trim();
+            finalizeElement(currentSlide, currentElement);
+            currentElement = { type: 'heading', text: headingMatch[1].trim() };
             continue;
         }
 
         // 横配置テキストボックス: --[aaa,bbb,ccc]
         const horizontalMatch = line.match(SYNTAX.HORIZONTAL_BOXES);
         if (horizontalMatch) {
-            // 現在の縦配置ブロックを確定
-            finalizeVerticalBlock(currentSlide, currentVerticalBlock);
-            currentVerticalBlock = null;
+            finalizeElement(currentSlide, currentElement);
+            currentElement = null;
 
             const items = horizontalMatch[1]
                 .split(',')
@@ -81,33 +78,27 @@ export function parseText(inputText) {
             continue;
         }
 
-        // 縦配置テキストボックス開始: --
-        if (SYNTAX.VERTICAL_BOX.test(line)) {
-            // 現在の縦配置ブロックを確定
-            finalizeVerticalBlock(currentSlide, currentVerticalBlock);
-
-            // 新しい縦配置ブロックを開始
-            currentVerticalBlock = {
-                type: 'vertical',
-                texts: []
-            };
+        // 縦配置テキストボックス: --/ テキスト
+        const verticalMatch = line.match(SYNTAX.VERTICAL_BOX);
+        if (verticalMatch) {
+            finalizeElement(currentSlide, currentElement);
+            currentElement = { type: 'vertical', text: verticalMatch[1].trim() };
             continue;
         }
 
-        // 通常のテキスト行
-        if (currentVerticalBlock) {
-            // 縦配置ブロック内のテキストとして追加（改行は空白で連結）
-            if (currentVerticalBlock.currentText === undefined) {
-                currentVerticalBlock.currentText = line;
+        // 継続行: 構文記号以外の行は直前の要素にスペースで連結
+        if (currentElement) {
+            if (currentElement.text === '') {
+                currentElement.text = line;
             } else {
-                currentVerticalBlock.currentText += ' ' + line;
+                currentElement.text += ' ' + line;
             }
         }
-        // 縦配置ブロック外のテキストは無視（仕様に従う）
+        // currentElementがnullの場合（先頭でどの構文にも属さない行）は無視
     }
 
-    // 最後の縦配置ブロックを確定
-    finalizeVerticalBlock(currentSlide, currentVerticalBlock);
+    // 最後の要素を確定
+    finalizeElement(currentSlide, currentElement);
 
     // 最後のスライドを保存
     if (hasContent(currentSlide)) {
@@ -129,15 +120,20 @@ function createEmptySlide() {
 }
 
 /**
- * 縦配置ブロックをスライドに追加（確定）
+ * 現在の要素をスライドに確定する
  * @param {Slide} slide
- * @param {ContentBlock|null} block
+ * @param {Object|null} element - { type: 'heading'|'vertical', text: string }
  */
-function finalizeVerticalBlock(slide, block) {
-    if (block && block.currentText) {
+function finalizeElement(slide, element) {
+    if (!element || element.text === '') {
+        return;
+    }
+    if (element.type === 'heading') {
+        slide.heading = element.text;
+    } else if (element.type === 'vertical') {
         slide.blocks.push({
             type: 'vertical',
-            texts: [block.currentText]
+            texts: [element.text]
         });
     }
 }

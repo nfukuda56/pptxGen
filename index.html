@@ -17,12 +17,11 @@
                 <label for="fileInput">テキストファイルをアップロード:</label>
                 <input type="file" id="fileInput" accept=".txt">
             </div>
-            <textarea id="inputText" placeholder="#見出し
---
-本文テキスト
+            <textarea id="inputText" placeholder="--# 見出し
+--/ 本文テキスト
 --[項目1,項目2,項目3]
 ---
-#次のスライド"></textarea>
+--# 次のスライド"></textarea>
         </section>
 
         <section class="settings-section">
@@ -40,19 +39,19 @@
 
                 <div class="setting-group">
                     <label for="headingSize">見出しサイズ:</label>
-                    <input type="number" id="headingSize" value="36" min="10" max="200">
+                    <input type="number" id="headingSize" value="60" min="10" max="200">
                     <span class="unit">pt</span>
                 </div>
 
                 <div class="setting-group">
                     <label for="bodySize">本文サイズ:</label>
-                    <input type="number" id="bodySize" value="24" min="10" max="200">
+                    <input type="number" id="bodySize" value="40" min="10" max="200">
                     <span class="unit">pt</span>
                 </div>
 
                 <div class="setting-group">
                     <label for="headingMargin">見出し下マージン:</label>
-                    <input type="number" id="headingMargin" value="20" min="0" max="200">
+                    <input type="number" id="headingMargin" value="30" min="0" max="200">
                     <span class="unit">pt</span>
                 </div>
 
@@ -104,13 +103,13 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td><code>#テキスト</code></td>
+                        <td><code>--# テキスト</code></td>
                         <td>見出し</td>
                         <td>-</td>
                     </tr>
                     <tr>
-                        <td><code>--</code></td>
-                        <td>本文テキストボックス開始</td>
+                        <td><code>--/ テキスト</code></td>
+                        <td>本文テキストボックス</td>
                         <td>縦方向</td>
                     </tr>
                     <tr>
